@@ -1,0 +1,47 @@
+Title:
+Cats Vs Dog
+
+Narrative:
+The game is set in aftermath of ww3 in which due to radiation every human died and cats and dog take shelter in a sci fi bunker due to radiation they gain intelligence and due to limited supplies in bunker they see each other enemies so the war is inevitable both decided to rage a war 
+
+
+Assets: 
+
+tileset - https://schwarnhild.itch.io/basic-forest-tileset-32x32-pixels
+character small - https://axulart.itch.io/small-8-direction-characters
+dogs - https://netherzapdos.itch.io/paws-whiskers-isometric-dogs-pack
+cats - https://netherzapdos.itch.io/paws-whiskers-isometric-cats-pack
+guns pack - https://arcadeisland.itch.io/guns-asset-pack-v1
+guns 2 - https://munstudios.itch.io/2d-pixel-guns-pack
+
+
+Goals:
+Stage 1:
+1. Render a Map with Wall Collision
+2. Render single player with animations 
+3. show a gun around him and shoot
+4. different types of gun
+5. powerups (health) (ammo)
+
+Stage 2: Networking
+Option 1 :
+
+the game will have a single room players will join in it and kill each other they will have 3 lives (how can i implement finishing game and point system should be based on kills and time)
+
+option 2:
+player will create a room which will have two teams they kill each other in 3 match series the most match win team win game will end
+
+
+1. go online and show players 
+2. check bullet collision with players 
+3. player updates
+
+Stage 3: 
+1. show hud
+2. show game updates ex (simon killed jack)
+
+
+Stage 4:
+1. Show game Menu
+2. show game results
+
