@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include "animation.h"
 #include "object.h"
+#include "list.h"
+#include "collision.h"
 
 #define PLAYER_SIZE 24
 
@@ -35,20 +37,23 @@ typedef enum
 
 typedef struct Player
 {
+    int id; // for networking
     GameObject *object;
     Vector2 direction;
     Animation *animations[PLAYER_ANIM_COUNT];
     float speed;
     float health;
+    List *collision_rects;
 
 } Player;
 
-Player *Player_create(SDL_Renderer *renderer, int x, int y, SDL_Texture *texture, PlayerColor color, float speed, float health);
+Player *Player_create(SDL_Renderer *renderer, int x, int y, SDL_Texture *texture, PlayerColor color, float speed, float health, List *collision_rects);
 void Player_input(Player *player);
 void Player_move(Player *player, float dt);
 void Player_animationUpdate(Player *player);
 void Player_delete(Player *player);
 void Player_render(Player *player, SDL_FRect *camera);
 void Player_update(Player *player, float dt, SDL_FRect *camera);
+void Player_checkCollisions(Player *player);
 
 #endif

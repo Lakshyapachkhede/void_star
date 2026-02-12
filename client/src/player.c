@@ -6,8 +6,9 @@
 #include "object.h"
 #include "utils.h"
 #include <stdbool.h>
+#include <math.h>
 
-Player *Player_create(SDL_Renderer *renderer, int x, int y, SDL_Texture *texture, PlayerColor color, float speed, float health)
+Player *Player_create(SDL_Renderer *renderer, int x, int y, SDL_Texture *texture, PlayerColor color, float speed, float health, List *collision_rects)
 {
     Player *p = malloc(sizeof(Player));
     p->direction = (Vector2){0, 0};
@@ -20,6 +21,7 @@ Player *Player_create(SDL_Renderer *renderer, int x, int y, SDL_Texture *texture
 
     p->speed = speed;
     p->health = health;
+    p->collision_rects = collision_rects;
 
     int loaded_frames = 0;
     for (int i = 0; i < PLAYER_ANIM_COUNT; i++)
@@ -83,9 +85,42 @@ void Player_animationUpdate(Player *player)
         player->object->anim->loop = 0;
         player->object->anim = player->animations[PLAYER_ANIM_DIE];
     }
-
-
 }
+
+void Player_checkCollisions(Player *player)
+{
+    for (unsigned int i = 0; i < player->collision_rects->size; i++)
+    {   
+        GameObject *collision_obj = List_getAt(player->collision_rects, i);
+
+        if(Collision_CheckCollisionF(&player->object->rect, &collision_obj->rect))
+        {
+            float overlapX = 0.0f;
+            float overlapY = 0.0f;
+
+            if(player->object->rect.x < collision_obj->rect.x)
+                overlapX = (player->object->rect.x + player->object->rect.w) - collision_obj->rect.x;
+            else
+                overlapX = player->object->rect.x - (collision_obj->rect.x + collision_obj->rect.w);
+
+            if(player->object->rect.y < collision_obj->rect.y)
+                overlapY = (player->object->rect.y + player->object->rect.h) - collision_obj->rect.y;
+            else
+                overlapY = player->object->rect.y - (collision_obj->rect.y + collision_obj->rect.h);
+
+      
+            if(fabsf(overlapX) < fabsf(overlapY))
+            {
+                player->object->rect.x -= overlapX;
+            }
+            else
+            {
+                player->object->rect.y -= overlapY;
+            }
+        }
+    }
+}
+
 
 void Player_render(Player *player, SDL_FRect *camera)
 {
@@ -97,6 +132,7 @@ void Player_update(Player *player, float dt, SDL_FRect *camera)
     Player_input(player);
     Player_move(player, dt);
     Player_animationUpdate(player);
+    Player_checkCollisions(player);
     GameObject_update(player->object, dt);
     Player_render(player, camera);
 }

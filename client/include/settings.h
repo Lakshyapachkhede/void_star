@@ -31,6 +31,8 @@
 
 #define PLAYER_HEALTH 100.0f
 
+#define SERVER_IP "127.0.0.1"
+
 
 #endif // SETTINGS_H
 

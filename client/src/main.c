@@ -1,3 +1,4 @@
+#include "network.h"
 #include "settings.h"
 #include "graphics.h"
 #include "audio.h"
@@ -7,21 +8,43 @@
 #include "texture_manager.h"
 #include "utils.h"
 #include "camera.h"
+#include <SDL2/SDL_net.h>
+#include <SDL2/SDL.h>
 
-/*
-
-TODO:
-1.Camera
-2.Collisions
-3.Weapons
-4.Z based drawing
-
-*/
 
 int main(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;
+
+    if (SDLNet_Init() < 0)
+    {
+        SDL_Log("SDLNet_Init: %s\n", SDLNet_GetError());
+        return 1;
+    }
+
+    UDPsocket socket = SDLNet_UDP_Open(0);
+
+    UDPpacket *packet = SDLNet_AllocPacket(512);
+
+    IPaddress serverIP;
+    if (SDLNet_ResolveHost(&serverIP, "127.0.0.1", SERVER_PORT) < 0)
+    {
+        SDL_Log("ResolveHost: %s\n", SDLNet_GetError());
+        return 1;
+    }
+
+    packet->address = serverIP;
+
+    ClientPacket c_packet = {0};
+
+    c_packet.type = MSG_JOIN;
+
+    memcpy(packet->data, &c_packet, sizeof(ClientPacket));
+    packet->len = sizeof(ClientPacket);
+
+    SDLNet_UDP_Send(socket, -1, packet);
+    SDL_Log("sent");
 
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
@@ -38,11 +61,9 @@ int main(int argc, char *argv[])
     int running = 1;
     SDL_Event event;
 
-    Player *player = Player_create(renderer, 100, 100, TextureManager_get(tm, PLAYER_SPRITE_SHEET_PATH), PLAYER_RED, PLAYER_SPEED, PLAYER_HEALTH);
-
+    Player *player = Player_create(renderer, 100, 100, TextureManager_get(tm, PLAYER_SPRITE_SHEET_PATH), PLAYER_RED, PLAYER_SPEED, PLAYER_HEALTH, map->collision_objects);
 
     Uint64 last_time = SDL_GetTicks64();
-
 
     while (running)
     {
@@ -73,14 +94,15 @@ int main(int argc, char *argv[])
         Graphics_clearScreen(renderer);
 
         Map_renderMap(map);
-        
+
         Player_update(player, dt, &camera);
 
         Camera_update(&camera, &player->object->rect);
-       
+
         Graphics_presentScreen(renderer);
     }
 
+    SDLNet_Quit();
     Map_delete(map);
     Player_delete(player);
     TextureManager_delete(tm);
