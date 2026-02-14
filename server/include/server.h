@@ -15,7 +15,12 @@ typedef struct Server
 }Server;
 
 Server *Server_Init();
-void Server_joinPlayer(Server *server, IPaddress address);
+void Server_updatePlayer(Server *server, ClientPacket c_packet);
 void Server_loop(Server *server);
+void Server_broadcast(Server *server);
+
+void Server_sendToClient(Server *server, ServerPacket *s_packet);
+void Server_joinPlayer(Server *server);
+
 
 #endif

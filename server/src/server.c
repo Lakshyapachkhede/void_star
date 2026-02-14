@@ -26,16 +26,35 @@ Server *Server_Init()
 
 }
 
+void Server_broadcast(Server *server)
+{
+    ServerPlayer *player, *tmp;
 
-void Server_joinPlayer(Server *server, IPaddress address)
+    HASH_ITER(hh, server->players, player, tmp)
+    {
+        
+    }
+
+}
+
+void Server_sendToClient(Server *server, ServerPacket *s_packet)
+{
+    memcpy(server->packet->data, s_packet, sizeof(ServerPacket));
+    server->packet->len = sizeof(ServerPacket);
+
+    SDLNet_UDP_Send(server->socket, -1, server->packet);
+
+}
+
+void Server_joinPlayer(Server *server)
 {
     ServerPlayer *player = malloc(sizeof(ServerPlayer));
 
-    player->x = 200;
-    player->y = 200;
+    player->x = 100;
+    player->y = 100;
     player->health = 100;
-    player->speed = 85;
-    player->address = address;
+    player->speed = 2;
+    player->address = server->packet->address;
     player->id = ++server->player_counter;
 
 
@@ -45,18 +64,56 @@ void Server_joinPlayer(Server *server, IPaddress address)
         player
     );
 
-    ServerPacket reply;
-    reply.type = MSG_ASSIGN_ID;
-    reply.id = player->id;
+    ServerPacket s_packet;
+    s_packet.type = MSG_ASSIGN_ID;
+    s_packet.id = player->id;
 
-    server->packet->address = address;
+    // memcpy(server->packet->data, &s_packet, sizeof(ServerPacket));
+    // server->packet->len = sizeof(ServerPacket);
 
-    memcpy(server->packet->data, &reply, sizeof(ServerPacket));
+    // SDLNet_UDP_Send(server->socket, -1, server->packet);
+    Server_sendToClient(server, &s_packet);
+
+    SDL_Log("player joined %d", server->player_counter - 1);
+
+}
+
+void Server_updatePlayer(Server *server, ClientPacket c_packet)
+{
+    ServerPlayer *player;
+
+    HASH_FIND_INT(server->players, &c_packet.id, player);
+    if(!player)
+    {
+        SDL_Log("not found");
+        return;
+    }
+    else {
+        //SDL_Log("find");
+
+    }
+
+    player->y += ((Network_checkKeyPressed(c_packet.keys, KEY_DOWN) - Network_checkKeyPressed(c_packet.keys, KEY_UP)) * player->speed);
+    player->x += ((Network_checkKeyPressed(c_packet.keys, KEY_RIGHT) - Network_checkKeyPressed(c_packet.keys, KEY_LEFT)) * player->speed);
+
+    /*SDL_Log("left: %d, right %d, up %d, down %d",
+         Network_checkKeyPressed(c_packet.keys, KEY_LEFT),
+         Network_checkKeyPressed(c_packet.keys, KEY_RIGHT),
+         Network_checkKeyPressed(c_packet.keys, KEY_UP),
+    Network_checkKeyPressed(c_packet.keys, KEY_DOWN));
+*/
+    ServerPacket s_packet;
+    s_packet.id = player->id;
+    s_packet.x = player->x;
+    s_packet.y = player->y;
+    s_packet.type = MSG_STATE;
+
+    memcpy(server->packet->data, &s_packet, sizeof(ServerPacket));
     server->packet->len = sizeof(ServerPacket);
 
     SDLNet_UDP_Send(server->socket, -1, server->packet);
-    SDL_Log("player joined %d", player->id);
 
+    Server_sendToClient(server, &s_packet);
 }
 
 void Server_loop(Server *server)
@@ -68,12 +125,16 @@ void Server_loop(Server *server)
         {
             ClientPacket received;
             memcpy(&received, server->packet->data, sizeof(ClientPacket));
-            SDL_Log("Received from client: type=%u id=%d\n", received.type, received.id);
+            //SDL_Log("Received from client: type=%u id=%d\n", received.type, received.id);
 
 
             if(received.type == MSG_JOIN)
             {
-                Server_joinPlayer(server, server->packet->address);
+                Server_joinPlayer(server);
+            }
+            if(received.type == MSG_INPUT)
+            {
+                Server_updatePlayer(server, received);
             }
         }
     }

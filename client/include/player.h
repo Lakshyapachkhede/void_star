@@ -37,7 +37,7 @@ typedef enum
 
 typedef struct Player
 {
-    int id; // for networking
+    
     GameObject *object;
     Vector2 direction;
     Animation *animations[PLAYER_ANIM_COUNT];

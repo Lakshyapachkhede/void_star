@@ -66,6 +66,7 @@ void Network_clearKey(uint8_t *keys, KeyTypes key);
 
 bool IPaddress_equal(IPaddress a, IPaddress b);
 
+void Network_setKeyValue(uint8_t *keys, KeyTypes key, bool value);
 
 
 #endif

@@ -129,10 +129,10 @@ void Player_render(Player *player, SDL_FRect *camera)
 
 void Player_update(Player *player, float dt, SDL_FRect *camera)
 {
-    Player_input(player);
-    Player_move(player, dt);
-    Player_animationUpdate(player);
-    Player_checkCollisions(player);
+    // Player_input(player);
+    // Player_move(player, dt);
+    // Player_animationUpdate(player);
+    // Player_checkCollisions(player);
     GameObject_update(player->object, dt);
     Player_render(player, camera);
 }
